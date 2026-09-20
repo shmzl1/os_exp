@@ -1,14 +1,97 @@
-/*
- * lab1 初始骨架代码(自动生成): 系统启动与串口控制台输出。
- * 启动至此的前期初始化流程，需要由你在本实验中设计并实现。
- * 你需要实现: entry.S(start 前的 M 态准备可另置 start.c)、串口轮询输出、
- * 最小 printf。链接脚本 kernel.ld 带注释保留; 底层宏 riscv.h 完整保留。
- * 代码导读路线与设计引导问题详见《实验说明书(lab1)》。
- *
- * 两个环境注意事项(说明书 §2"环境前置条件"与附录 C, 动手前必读):
- *  1. start() 的 M→S 切换清单必须包含 PMP 配置(最简两行):
- *       w_pmpaddr0(0x3fffffffffffffull); w_pmpcfg0(0xf);
- *     否则在新版 QEMU 上 mret 进 S 态的第一条取指即触发 fault(全程无输出)。
- *  2. entry.S 里的陷阱向量标号前加 .balign 4(mtvec 要求 4 字节对齐,
- *     不满足时写入会被硬件静默丢弃)。
- */
+#include <stdarg.h>
+
+#include "types.h"
+
+void console_putc(char c);
+
+static void
+print_unsigned(uint64 value, uint base)
+{
+  static const char digits[] = "0123456789abcdef";
+  char buffer[32];
+  uint length = 0;
+
+  // 至少生成一个数字，因此数值 0 会输出为 "0"。
+  do {
+    buffer[length++] = digits[value % base];
+    value /= base;
+  } while (value != 0);
+
+  // 余数按低位到高位产生，逆序发送即可得到正常数字顺序。
+  while (length != 0)
+    console_putc(buffer[--length]);
+}
+
+static void
+print_signed(int value)
+{
+  uint64 magnitude;
+
+  if (value < 0) {
+    console_putc('-');
+    // 先加一再取负，避免对最小有符号整数直接取负而溢出。
+    magnitude = (uint64)(-(value + 1)) + 1;
+  } else {
+    magnitude = (uint64)value;
+  }
+
+  print_unsigned(magnitude, 10);
+}
+
+static void
+print_string(const char *s)
+{
+  if (s == 0)
+    s = "(null)";
+
+  while (*s != '\0')
+    console_putc(*s++);
+}
+
+void
+printf(const char *format, ...)
+{
+  va_list arguments;
+  char specifier;
+
+  va_start(arguments, format);
+  while (*format != '\0') {
+    if (*format != '%') {
+      console_putc(*format++);
+      continue;
+    }
+
+    format++;
+    specifier = *format;
+    if (specifier == '\0') {
+      console_putc('%');
+      break;
+    }
+    format++;
+
+    switch (specifier) {
+    case 'd':
+      print_signed(va_arg(arguments, int));
+      break;
+    case 'x':
+      console_putc('0');
+      console_putc('x');
+      print_unsigned(va_arg(arguments, uint), 16);
+      break;
+    case 's':
+      print_string(va_arg(arguments, const char *));
+      break;
+    case 'c':
+      console_putc((char)va_arg(arguments, int));
+      break;
+    case '%':
+      console_putc('%');
+      break;
+    default:
+      console_putc('%');
+      console_putc(specifier);
+      break;
+    }
+  }
+  va_end(arguments);
+}
