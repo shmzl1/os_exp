@@ -1,6 +1,10 @@
 #include "types.h"
 #include "course_sid.h"
 
+#ifndef LAB1_ENABLE_PRINTF_TEST
+#define LAB1_ENABLE_PRINTF_TEST 0
+#endif
+
 void console_putc(char c);
 void printf(const char *format, ...);
 
@@ -61,6 +65,7 @@ print_banner(void)
 #endif
 }
 
+#if LAB1_ENABLE_PRINTF_TEST
 static void
 print_printf_checks(void)
 {
@@ -74,12 +79,15 @@ print_printf_checks(void)
          "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
          "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 }
+#endif
 
 void
 main(void)
 {
   print_banner();
+#if LAB1_ENABLE_PRINTF_TEST
   print_printf_checks();
+#endif
 
   for (;;)
     asm volatile("wfi");

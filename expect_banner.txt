@@ -1,3 +1,1 @@
 OSLAB1 sid=2024302131066 mod97=0x44
-[printf-test] zero=0 negative=-123 min=-2147483648 max=2147483647 hex=0xabcdef empty=[] char=Z percent=%
-[printf-test] long=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
