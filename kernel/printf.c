@@ -23,7 +23,7 @@ print_unsigned(uint64 value, uint base)
 }
 
 static void
-print_signed(int value)
+print_signed(long value)
 {
   uint64 magnitude;
 
@@ -51,7 +51,7 @@ print_string(const char *s)
 void
 printf(const char *format, ...)
 {
-  va_list arguments;
+  va_list arguments;//初始化可变参数
   char specifier;
 
   va_start(arguments, format);
@@ -71,11 +71,11 @@ printf(const char *format, ...)
 
     switch (specifier) {
     case 'd':
-      print_signed(va_arg(arguments, int));
+      // 本内核的 %d 接收 RV64 long，调用者需传入 long 以保留完整学号。
+      print_signed(va_arg(arguments, long));
       break;
     case 'x':
-      console_putc('0');
-      console_putc('x');
+      // 只输出小写十六进制数字，0x 前缀由格式串提供。
       print_unsigned(va_arg(arguments, uint), 16);
       break;
     case 's':
@@ -93,5 +93,5 @@ printf(const char *format, ...)
       break;
     }
   }
-  va_end(arguments);
+  va_end(arguments);//结束参数访问
 }
